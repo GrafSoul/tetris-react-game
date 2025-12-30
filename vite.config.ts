@@ -8,6 +8,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
     include: ['three', '@react-three/fiber', '@react-three/drei'],
+    entries: ['index.html', 'src/**/*.{ts,tsx}'],
     force: true,
+  },
+  server: {
+    watch: {
+      ignored: ['**/docs/**'],
+    },
   },
 })

@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { GameState, Board, Tetromino, TetrominoType } from '../types/tetris';
+import { useSound } from './useSound';
 import {
   BOARD_WIDTH,
   BOARD_HEIGHT,
@@ -121,6 +122,8 @@ const calculateScore = (linesCleared: number, level: number): number => {
 };
 
 export const useTetris = () => {
+  const { play: playSound } = useSound();
+  
   const [gameState, setGameState] = useState<GameState>({
     board: createEmptyBoard(),
     currentPiece: null,
@@ -134,6 +137,7 @@ export const useTetris = () => {
   });
   
   const [clearedLines, setClearedLines] = useState<ClearedLineInfo[]>([]);
+  const prevLevelRef = useRef<number>(0);
 
   const gameLoopRef = useRef<number | null>(null);
   const lastDropRef = useRef<number>(0);
@@ -153,7 +157,7 @@ export const useTetris = () => {
       isPaused: false,
       isPlaying: true,
     });
-  }, []);
+  }, [playSound]);
 
   const togglePause = useCallback(() => {
     setGameState((prev) => ({
@@ -167,6 +171,7 @@ export const useTetris = () => {
       if (!prev.currentPiece || prev.isGameOver || prev.isPaused) return prev;
       
       if (isValidPosition(prev.board, prev.currentPiece, -1, 0)) {
+        playSound('move');
         return {
           ...prev,
           currentPiece: {
@@ -180,13 +185,14 @@ export const useTetris = () => {
       }
       return prev;
     });
-  }, []);
+  }, [playSound]);
 
   const moveRight = useCallback(() => {
     setGameState((prev) => {
       if (!prev.currentPiece || prev.isGameOver || prev.isPaused) return prev;
       
       if (isValidPosition(prev.board, prev.currentPiece, 1, 0)) {
+        playSound('move');
         return {
           ...prev,
           currentPiece: {
@@ -200,7 +206,7 @@ export const useTetris = () => {
       }
       return prev;
     });
-  }, []);
+  }, [playSound]);
 
   const rotate = useCallback(() => {
     setGameState((prev) => {
@@ -210,6 +216,7 @@ export const useTetris = () => {
       const rotatedPiece = { ...prev.currentPiece, shape: rotatedShape };
       
       if (isValidPosition(prev.board, rotatedPiece)) {
+        playSound('rotate');
         return { ...prev, currentPiece: rotatedPiece };
       }
       
@@ -217,6 +224,7 @@ export const useTetris = () => {
       const kicks = [-1, 1, -2, 2];
       for (const kick of kicks) {
         if (isValidPosition(prev.board, rotatedPiece, kick, 0)) {
+          playSound('rotate');
           return {
             ...prev,
             currentPiece: {
@@ -229,7 +237,7 @@ export const useTetris = () => {
       
       return prev;
     });
-  }, []);
+  }, [playSound]);
 
   const moveDown = useCallback(() => {
     setGameState((prev) => {
@@ -283,9 +291,10 @@ export const useTetris = () => {
         lines: newLines,
       };
     });
-  }, []);
+  }, [playSound]);
 
   const hardDrop = useCallback(() => {
+    playSound('drop');
     setGameState((prev) => {
       if (!prev.currentPiece || prev.isGameOver || prev.isPaused) return prev;
       
@@ -335,7 +344,7 @@ export const useTetris = () => {
         lines: newLines,
       };
     });
-  }, []);
+  }, [playSound]);
 
   // Game loop
   useEffect(() => {
@@ -403,6 +412,30 @@ export const useTetris = () => {
   const clearExplosion = useCallback(() => {
     setClearedLines([]);
   }, []);
+
+  // Sound effects for game events
+  useEffect(() => {
+    if (gameState.isGameOver) {
+      playSound('gameOver');
+    }
+  }, [gameState.isGameOver, playSound]);
+
+  useEffect(() => {
+    if (clearedLines.length > 0) {
+      if (clearedLines.length === 4) {
+        playSound('tetris');
+      } else {
+        playSound('clear');
+      }
+    }
+  }, [clearedLines, playSound]);
+
+  useEffect(() => {
+    if (gameState.level > prevLevelRef.current && gameState.isPlaying) {
+      playSound('levelUp');
+    }
+    prevLevelRef.current = gameState.level;
+  }, [gameState.level, gameState.isPlaying, playSound]);
 
   return {
     gameState,
