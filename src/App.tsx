@@ -9,11 +9,14 @@ import {
   StartScreen,
   PauseOverlay,
   Background3D,
+  LineExplosion,
 } from "./components";
 
 function App() {
   const {
     gameState,
+    clearedLines,
+    clearExplosion,
     startGame,
     togglePause,
     moveLeft,
@@ -95,6 +98,13 @@ function App() {
         lines={gameState.lines}
         onRestart={startGame}
       />
+
+      {clearedLines.length > 0 && (
+        <LineExplosion
+          clearedLines={clearedLines}
+          onComplete={clearExplosion}
+        />
+      )}
     </div>
   );
 }

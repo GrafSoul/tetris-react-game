@@ -86,7 +86,23 @@ const mergePieceToBoard = (board: Board, piece: Tetromino): Board => {
   return newBoard;
 };
 
-const clearLines = (board: Board): { newBoard: Board; linesCleared: number } => {
+interface ClearedLineInfo {
+  rowIndex: number;
+  colors: string[];
+}
+
+const clearLines = (board: Board): { newBoard: Board; linesCleared: number; clearedLinesInfo: ClearedLineInfo[] } => {
+  const clearedLinesInfo: ClearedLineInfo[] = [];
+  
+  board.forEach((row, index) => {
+    if (row.every((cell) => cell.filled)) {
+      clearedLinesInfo.push({
+        rowIndex: index,
+        colors: row.map((cell) => cell.color),
+      });
+    }
+  });
+  
   const newBoard = board.filter((row) => row.some((cell) => !cell.filled));
   const linesCleared = BOARD_HEIGHT - newBoard.length;
   
@@ -96,7 +112,7 @@ const clearLines = (board: Board): { newBoard: Board; linesCleared: number } => 
     );
   }
   
-  return { newBoard, linesCleared };
+  return { newBoard, linesCleared, clearedLinesInfo };
 };
 
 const calculateScore = (linesCleared: number, level: number): number => {
@@ -116,6 +132,8 @@ export const useTetris = () => {
     isPaused: false,
     isPlaying: false,
   });
+  
+  const [clearedLines, setClearedLines] = useState<ClearedLineInfo[]>([]);
 
   const gameLoopRef = useRef<number | null>(null);
   const lastDropRef = useRef<number>(0);
@@ -232,7 +250,11 @@ export const useTetris = () => {
       
       // Lock piece and spawn new one
       const mergedBoard = mergePieceToBoard(prev.board, prev.currentPiece);
-      const { newBoard, linesCleared } = clearLines(mergedBoard);
+      const { newBoard, linesCleared, clearedLinesInfo } = clearLines(mergedBoard);
+      
+      if (clearedLinesInfo.length > 0) {
+        setClearedLines(clearedLinesInfo);
+      }
       const newLines = prev.lines + linesCleared;
       const newLevel = Math.floor(newLines / 10);
       const newScore = prev.score + calculateScore(linesCleared, prev.level);
@@ -281,7 +303,11 @@ export const useTetris = () => {
       };
       
       const mergedBoard = mergePieceToBoard(prev.board, droppedPiece);
-      const { newBoard, linesCleared } = clearLines(mergedBoard);
+      const { newBoard, linesCleared, clearedLinesInfo } = clearLines(mergedBoard);
+      
+      if (clearedLinesInfo.length > 0) {
+        setClearedLines(clearedLinesInfo);
+      }
       const newLines = prev.lines + linesCleared;
       const newLevel = Math.floor(newLines / 10);
       const newScore = prev.score + calculateScore(linesCleared, prev.level) + dropDistance * POINTS.HARD_DROP;
@@ -374,8 +400,14 @@ export const useTetris = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState.isPlaying, moveLeft, moveRight, moveDown, rotate, hardDrop, togglePause]);
 
+  const clearExplosion = useCallback(() => {
+    setClearedLines([]);
+  }, []);
+
   return {
     gameState,
+    clearedLines,
+    clearExplosion,
     startGame,
     togglePause,
     moveLeft,
