@@ -20,13 +20,13 @@ export const PauseOverlay = ({ isPaused, onResume }: PauseOverlayProps) => {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.8 }}
-            className="text-center bg-slate-900/95 rounded-2xl border border-purple-500/30"
+            className="text-center flex flex-col items-center gap-6 bg-slate-900/95 rounded-2xl border border-purple-500/30"
             style={{ padding: "48px 64px" }}>
-            <div className="mb-8">
+            <div>
               <Pause className="w-14 h-14 mx-auto text-purple-400" />
             </div>
-            <h2 className="text-3xl font-bold text-white mb-4">Paused</h2>
-            <p className="text-slate-400 mb-8 text-base">
+            <h2 className="text-3xl font-bold text-white">Paused</h2>
+            <p className="text-slate-400 text-base">
               Press P or click to continue
             </p>
             <motion.button
@@ -36,7 +36,7 @@ export const PauseOverlay = ({ isPaused, onResume }: PauseOverlayProps) => {
                 e.stopPropagation();
                 onResume();
               }}
-              className="rounded-xl font-semibold text-base text-white flex items-center gap-3 mx-auto border border-purple-400/30"
+              className="rounded-xl font-semibold text-base text-white flex items-center justify-center gap-3 mx-auto border border-purple-400/30"
               style={{
                 padding: "16px 40px",
                 background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
