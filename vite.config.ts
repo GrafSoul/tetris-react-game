@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/tetris-react-game/',
+  base: './',
   plugins: [react(), tailwindcss()],
   optimizeDeps: {
     include: ['three', '@react-three/fiber', '@react-three/drei'],
