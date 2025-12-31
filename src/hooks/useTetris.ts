@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { GameState, Board, Tetromino, TetrominoType } from '../types/tetris';
 import { useSound } from './useSound';
+import { useGameStorage } from './useGameStorage';
 import {
   BOARD_WIDTH,
   BOARD_HEIGHT,
@@ -123,6 +124,14 @@ const calculateScore = (linesCleared: number, level: number): number => {
 
 export const useTetris = () => {
   const { play: playSound } = useSound();
+  const { 
+    saveGameState, 
+    loadGameState, 
+    clearSavedGame, 
+    hasSavedGame, 
+    getHighScores, 
+    addHighScore 
+  } = useGameStorage();
   
   const [gameState, setGameState] = useState<GameState>({
     board: createEmptyBoard(),
@@ -138,6 +147,7 @@ export const useTetris = () => {
   
   const [clearedLines, setClearedLines] = useState<ClearedLineInfo[]>([]);
   const prevLevelRef = useRef<number>(0);
+  const hasAddedScoreRef = useRef<boolean>(false);
 
   const gameLoopRef = useRef<number | null>(null);
   const lastDropRef = useRef<number>(0);
@@ -145,6 +155,9 @@ export const useTetris = () => {
   const startGame = useCallback(() => {
     const firstPiece = getRandomTetromino();
     const secondPiece = getRandomTetromino();
+    
+    clearSavedGame();
+    hasAddedScoreRef.current = false;
     
     setGameState({
       board: createEmptyBoard(),
@@ -157,7 +170,28 @@ export const useTetris = () => {
       isPaused: false,
       isPlaying: true,
     });
-  }, [playSound]);
+  }, [clearSavedGame]);
+
+  const continueGame = useCallback(() => {
+    const savedState = loadGameState();
+    if (!savedState) return false;
+    
+    hasAddedScoreRef.current = false;
+    
+    setGameState({
+      board: savedState.board,
+      currentPiece: savedState.currentPiece,
+      nextPiece: savedState.nextPiece,
+      score: savedState.score,
+      level: savedState.level,
+      lines: savedState.lines,
+      isGameOver: false,
+      isPaused: false,
+      isPlaying: true,
+    });
+    
+    return true;
+  }, [loadGameState]);
 
   const togglePause = useCallback(() => {
     setGameState((prev) => ({
@@ -402,12 +436,17 @@ export const useTetris = () => {
           e.preventDefault();
           togglePause();
           break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          startGame();
+          break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState.isPlaying, moveLeft, moveRight, moveDown, rotate, hardDrop, togglePause]);
+  }, [gameState.isPlaying, moveLeft, moveRight, moveDown, rotate, hardDrop, togglePause, startGame]);
 
   const clearExplosion = useCallback(() => {
     setClearedLines([]);
@@ -437,11 +476,30 @@ export const useTetris = () => {
     prevLevelRef.current = gameState.level;
   }, [gameState.level, gameState.isPlaying, playSound]);
 
+  // Auto-save game state
+  useEffect(() => {
+    if (gameState.isPlaying && !gameState.isGameOver && !gameState.isPaused) {
+      saveGameState(gameState);
+    }
+  }, [gameState, saveGameState]);
+
+  // Add high score on game over
+  useEffect(() => {
+    if (gameState.isGameOver && gameState.score > 0 && !hasAddedScoreRef.current) {
+      hasAddedScoreRef.current = true;
+      addHighScore(gameState.score, gameState.level, gameState.lines);
+      clearSavedGame();
+    }
+  }, [gameState.isGameOver, gameState.score, gameState.level, gameState.lines, addHighScore, clearSavedGame]);
+
   return {
     gameState,
     clearedLines,
     clearExplosion,
     startGame,
+    continueGame,
+    hasSavedGame,
+    getHighScores,
     togglePause,
     moveLeft,
     moveRight,

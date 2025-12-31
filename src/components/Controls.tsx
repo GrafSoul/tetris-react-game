@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Pause,
   Play,
+  RotateCcw,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ interface ControlsProps {
   onRotate: () => void;
   onHardDrop: () => void;
   onTogglePause: () => void;
+  onNewGame: () => void;
   isPaused: boolean;
   isPlaying: boolean;
 }
@@ -91,6 +93,7 @@ export const Controls = ({
   onRotate,
   onHardDrop,
   onTogglePause,
+  onNewGame,
   isPaused,
   isPlaying,
 }: ControlsProps) => {
@@ -102,7 +105,7 @@ export const Controls = ({
       animate={{ opacity: 1, y: 0 }}
       className="mt-6">
       <div className="flex flex-col items-center gap-3">
-        {/* Top row - Rotate and Pause */}
+        {/* Top row - Rotate, Pause, New Game */}
         <div className="flex gap-3">
           <ControlButton
             icon={RotateCw}
@@ -115,6 +118,12 @@ export const Controls = ({
             label={isPaused ? "Play" : "Pause"}
             keyHint="P"
             onClick={onTogglePause}
+          />
+          <ControlButton
+            icon={RotateCcw}
+            label="New"
+            keyHint="N"
+            onClick={onNewGame}
           />
         </div>
 

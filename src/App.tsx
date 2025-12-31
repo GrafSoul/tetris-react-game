@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useTetris } from "./hooks/useTetris";
 import {
@@ -10,6 +11,7 @@ import {
   PauseOverlay,
   Background3D,
   LineExplosion,
+  HighScores,
 } from "./components";
 
 function App() {
@@ -18,6 +20,9 @@ function App() {
     clearedLines,
     clearExplosion,
     startGame,
+    continueGame,
+    hasSavedGame,
+    getHighScores,
     togglePause,
     moveLeft,
     moveRight,
@@ -26,15 +31,28 @@ function App() {
     hardDrop,
   } = useTetris();
 
+  const [showHighScores, setShowHighScores] = useState(false);
+
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4">
       <Background3D />
 
       <AnimatePresence mode="wait">
         {!gameState.isPlaying && !gameState.isGameOver && (
-          <StartScreen key="start" onStart={startGame} />
+          <StartScreen
+            key="start"
+            onStart={startGame}
+            onContinue={hasSavedGame() ? continueGame : undefined}
+            onShowHighScores={() => setShowHighScores(true)}
+          />
         )}
       </AnimatePresence>
+
+      <HighScores
+        scores={getHighScores()}
+        isOpen={showHighScores}
+        onClose={() => setShowHighScores(false)}
+      />
 
       {gameState.isPlaying && (
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-8">
@@ -64,6 +82,7 @@ function App() {
                 onRotate={rotate}
                 onHardDrop={hardDrop}
                 onTogglePause={togglePause}
+                onNewGame={startGame}
                 isPaused={gameState.isPaused}
                 isPlaying={gameState.isPlaying}
               />
@@ -79,6 +98,7 @@ function App() {
               onRotate={rotate}
               onHardDrop={hardDrop}
               onTogglePause={togglePause}
+              onNewGame={startGame}
               isPaused={gameState.isPaused}
               isPlaying={gameState.isPlaying}
             />

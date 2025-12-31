@@ -1,11 +1,17 @@
 import { motion } from "framer-motion";
-import { Play, Gamepad2 } from "lucide-react";
+import { Play, Gamepad2, Trophy, RotateCcw } from "lucide-react";
 
 interface StartScreenProps {
   onStart: () => void;
+  onContinue?: () => boolean;
+  onShowHighScores?: () => void;
 }
 
-export const StartScreen = ({ onStart }: StartScreenProps) => {
+export const StartScreen = ({
+  onStart,
+  onContinue,
+  onShowHighScores,
+}: StartScreenProps) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -95,29 +101,90 @@ export const StartScreen = ({ onStart }: StartScreenProps) => {
           ))}
         </div>
 
-        {/* Start button */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onStart}
+        {/* Buttons */}
+        <div
           style={{
-            padding: "20px 48px",
-            borderRadius: "12px",
-            fontWeight: 700,
-            fontSize: "18px",
-            color: "white",
             display: "flex",
+            flexDirection: "column",
+            gap: "16px",
             alignItems: "center",
-            gap: "12px",
-            margin: "0 auto",
-            border: "1px solid rgba(168, 85, 247, 0.3)",
-            background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-            boxShadow: "0 4px 30px rgba(99, 102, 241, 0.5)",
-            cursor: "pointer",
+            marginBottom: "8px",
           }}>
-          <Play style={{ width: "24px", height: "24px" }} />
-          Start Game
-        </motion.button>
+          {onContinue && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onContinue}
+              style={{
+                padding: "16px 40px",
+                borderRadius: "12px",
+                fontWeight: 700,
+                fontSize: "16px",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                width: "100%",
+                justifyContent: "center",
+                border: "1px solid rgba(34, 197, 94, 0.3)",
+                background: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)",
+                boxShadow: "0 4px 30px rgba(34, 197, 94, 0.4)",
+                cursor: "pointer",
+              }}>
+              <RotateCcw style={{ width: "20px", height: "20px" }} />
+              Продолжить
+            </motion.button>
+          )}
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onStart}
+            style={{
+              padding: "16px 40px",
+              borderRadius: "12px",
+              fontWeight: 700,
+              fontSize: "16px",
+              color: "white",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              width: "100%",
+              justifyContent: "center",
+              border: "1px solid rgba(168, 85, 247, 0.3)",
+              background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+              boxShadow: "0 4px 30px rgba(99, 102, 241, 0.5)",
+              cursor: "pointer",
+            }}>
+            <Play style={{ width: "20px", height: "20px" }} />
+            {onContinue ? "Новая игра" : "Начать игру"}
+          </motion.button>
+
+          {onShowHighScores && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onShowHighScores}
+              style={{
+                padding: "16px 40px",
+                borderRadius: "12px",
+                fontWeight: 700,
+                fontSize: "16px",
+                color: "#fbbf24",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                width: "100%",
+                justifyContent: "center",
+                border: "1px solid rgba(251, 191, 36, 0.3)",
+                background: "rgba(251, 191, 36, 0.1)",
+                cursor: "pointer",
+              }}>
+              <Trophy style={{ width: "18px", height: "18px" }} />
+              Рекорды
+            </motion.button>
+          )}
+        </div>
 
         {/* Instructions */}
         <motion.div

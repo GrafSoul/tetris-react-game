@@ -8,3 +8,4 @@ export { StartScreen } from './StartScreen';
 export { PauseOverlay } from './PauseOverlay';
 export { Background3D } from './Background3D';
 export { LineExplosion } from './LineExplosion';
+export { HighScores } from './HighScores';
